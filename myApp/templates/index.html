@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+{% load post_extras %}
+{% block content %}
+
+<head>
+    <style>
+        .hidden {
+            display: none
+        }
+    </style>
+</head>
+
+<body>
+    <main role="main" class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-7 blog-main">
+                <div class="container">
+                    {% for post in posts.all %}
+                    <div class="card-deck mb-3">
+                        <div class="card mb-4 shadow-sm">
+                            <div class="card-header">
+
+                                <!-- 접속자와 글쓴이가 같으면 -->
+                                <div class="btn-group" style="float: left;">
+                                    <a class="my-0 font-weight-normal" href="#"><span
+                                            class="writer_name">{{ post.create_user }}</span></a>
+                                </div>
+
+                                <!-- 점속자와 글쓴이가 같지 않으면 사라짐 -->
+                                <div class="btn-group" style="float: right;">
+                                    <span class="hidden" id="control_id">
+                                        <a href="{% url 'update' post.id %}"><img src="/static/update.png" alt="update" style="width: 1.5rem; height:1.5rem;">&nbsp;</a>
+                                        <a href="{% url 'delete' post.id %}" onclick="return confirm('정말 삭제하시겠습니까?')"><img src="/static/delete.png" alt="delete" style="width: 1.5rem; height:1.5rem;"></a>
+                                   
+                                    </span>
+                                </div>
+
+                            </div>
+                            {% if post.create_img %}
+                            <div class="text-center">
+                                <img src="{{post.create_img.url}}" class="rounded" alt="..." width="585.5dp"
+                                    height="585.5dp">
+                            </div>
+                            {% else %}
+                            <a>no</a>
+                            {% endif %}
+                            <div class="card-body">
+
+                                {% if post.post_likes.all %}
+                                <a class="like" name="{{ post.pk }}"><img id="like-img{{ post.pk }}" src="/static/like_after.png" alt="클릭시 좋아요 취소" style="width: 2rem; height:2rem;"></a>
+                                {% else %}
+                                <a class="like" name="{{ post.pk }}"><img id="like-img{{ post.pk }}" src="/static/like_before.png" alt="클릭시 좋아요" style="width: 2rem; height:2rem;"></a>
+                                {% endif %}
+
+
+                                <a href="{% url 'detail' post.id %}"><img src="/static/detail.png" alt="detail 이동"
+                                        style="width: 2rem; height:2rem;"></a>
+                                <div class="group">
+                                    <div class="group">
+
+                <!-- # .. new -->
+
+                <small class="text-muted">{{post.comments.count}} comment</small>
+                <br>
+                <a class="my-0 font-weight-normal" href="#">{{ post.create_user }}</a>
+                <a class="card-title pricing-card-title">{{ post|add_link|safe|linebreaksbr }}</a>
+                <br>
+
+                {% for comment in post.comments.all %}
+                <a class="card-text" href="#"><span class="comment_writer_name">{{comment.comment_user}}</span></a>
+                <a class="card-text">{{comment.comment_text}}
+                    <span class="control hidden" id="control_id1{{ forloop.counter0 }}">
+                        <form action="{% url 'c_delete' post.pk comment.pk %}" method="POST"
+                            style="display:inline-block">
+                            {% csrf_token %}
+                            <input type="`" name="app_url" id="app_url" value="{{app_url}}" />
+                            <button type="submit">삭제</button>
+                        </form>
+                    </span>
+                    <br>
+                    {% endfor %}
+                    <small class="text-muted">{{ post.create_date }}</small>
+                    <br>
+
+                    
+                    <div class="group">
+                        <form action="{% url 'c_post' post.id %}" method="POST">
+                            {% csrf_token %}
+                            <div class="input-group input-group-sm mb-3">
+                                <input type="text" class="form-control" aria-label="Sizing example input"
+                                    aria-describedby="inputGroup-sizing-sm" name="comment_text" id="comment_text"
+                                    placeholder="댓글 달기 ..." style="display:inline-block">
+                                <input type="hidden" name="app_url" id="app_url" value="{{app_url}}" />
+                                <div class="input-group-prepend">
+                                    <button class="input-group-text" id="inputGroup-sizing-sm" type="submit">게시</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+            </div>
+                                    <a class="my-0 font-weight-normal" href="#">{{ post.create_user }}</a>
+                                    <a class="card-title pricing-card-title">{{ post|safe|linebreaksbr }}</a>
+                                    <br>
+                                    <small class="text-muted">{{ post.create_date }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <aside class="col-md-3 blog-sidebar">
+                <div class="card mb-3 bg-light rounded" style="max-width: 540px;" bg-light rounded>
+                    <div class="row no-gutters">
+                        <a></a>
+                        <div class="col-md-5 d-flex align-items-center d-flex justify-content-center">
+                            <img src="{{ profile_pic }}" alt="..." class="rounded-circle" width="60" height="60">
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card-body">
+                                <a><span id="user_name">{{user.username}}</span></a>
+                                <br>
+                                <a href="#">My Profile</a>
+                                <br>
+                                <a href="{% url 'post' %}">New Post</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% if messages %}
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    {% for message in messages %}
+                    <strong>{{ message.message }}</strong>
+                    {% endfor %}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                {% endif %}
+                <div class="p-3">
+                    <h4 class="font-italic">Producer</h4>
+                    <ol class="list-unstyled">
+                        <li><a href="#">GitHub</a></li>
+                        <li><a href="#">Instagram</a></li>
+                    </ol>
+                    <footer class="my-2 pt-2 text-muted text-center text-small">
+                        <p class="mb-1">&copy; 2019-2020</p>
+                    </footer>
+                </div>
+            </aside>
+
+        </div>
+    </main>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script type="text/javascript">
+
+        $("#user_name").text()
+        $(".writer_name").text()
+
+        $(".writer_name")
+        $(".writer_name")[0].innerHTML
+
+        for (i = 0; i < $(".writer_name").length; i++) {
+            if ($("#user_name").text() == $(".writer_name")[i].innerHTML) {
+                $("#control_id").removeClass("hidden");
+            }
+        }
+
+
+        $('.like').click(function () {
+      var pk = $(this).attr('name')
+
+      $.ajax({
+        type: "POST",
+        url: "{% url 'like' %}",
+        data: { 'pk': pk, 'csrfmiddlewaretoken': '{{ csrf_token }}' },
+        dataType: "json",
+
+        success: function (response) {
+          if (response.likes_count == 1) {
+            $('#count' + pk).html(response.likes_count + ' like ');
+            $('#like-img' + pk).attr('src', '/static/like_after.png');
+          } else if (response.likes_count == 0) {
+            $('#count' + pk).html('0 like');
+            $('#like-img' + pk).attr('src', '/static/like_before.png');
+          } else {
+            $('#count' + pk).html(response.likes_count + ' like');
+            $('#like-img' + pk).attr('src', '/static/like_after.png');
+          }
+          alert(response.message);
+        },
+        error: function (request, status, error) {
+          alert('로그인이 필요합니다.')
+        }
+      });
+    })
+
+
+    </script>
+
+</body>
+{% endblock %}

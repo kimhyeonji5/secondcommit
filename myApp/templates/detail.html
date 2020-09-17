@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% load post_extras %}
+{% block content %}
+
+<head>
+    {% if messages %}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        {% for message in messages %}
+        <strong>{{ message.message }}</strong>
+        {% endfor %}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    {% endif %}
+</head>
+
+<body>
+    <main role="main" class="container">
+        <div class="row justify-content-center">
+
+            <div class="col-md-7 blog-main">
+                <div class="container">
+                    <div class="card-deck mb-3">
+                        <div class="card mb-4 shadow-sm">
+                            {% if post.create_img %}
+                            <div class="text-center">
+                                <img src="{{post.create_img.url}}" class="rounded" alt="..." width="585.5dp"
+                                    height="585.5dp">
+                            </div>
+                            {% else %}
+                            <a>no</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="col-md-3 blog-sidebar">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="btn-group">
+                            <a class="my-0 font-weight-normal" href="#"><span
+                                    class="writer_name">{{ post.create_user }}</span></a>
+                        </div>
+                        <div class="btn-group">
+                            <span class="hidden" id="control_id">
+                                <a href="{% url 'update' post.id %}"><img src="/static/update.png" alt="update"
+                                        style="width: 1.5rem; height:1.5rem;">&nbsp;</a>
+                                <a href="{% url 'delete' post.id %}" onclick="return confirm('정말 삭제하시겠습니까?')"><img src="/static/delete.png" alt="delete"
+                                        style="width: 1.5rem; height:1.5rem;"></a>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+
+                    {% if post.likes.all %}
+                    <a class="like" name="{{ post.pk }}"><img id="like-img{{ post.pk }}" src="/static/like_after.png"
+                            alt="클릭시 좋아요 취소" style="width: 2rem; height:2rem;"></a>
+                    {% else %}
+                    <a class="like" name="{{ post.pk }}"><img id="like-img{{ post.pk }}" src="/static/like_before.png"
+                            alt="클릭시 좋아요" style="width: 2rem; height:2rem;"></a>
+                    {% endif %}
+
+
+                    <a href="{% url 'detail' post.id %}"><img src="/static/detail.png" alt="detail 이동"
+                            style="width: 2rem; height:2rem;"></a>
+                    <br>
+
+                    <!-- 이상 -->
+                    <small class="text-muted"><span class="like_count" id="count{{ post.pk }}">{{ post.total_likes }}
+                        like</span></small>
+                    <small class="text-muted">/</small>
+                    <small class="text-muted">{{post.comments.count}} comment</small>
+                     <hr>
+                    <a class="card-title pricing-card-title">{{ post|add_link|safe|linebreaksbr }}<small
+                        class="text-muted">&nbsp;&nbsp;{{ post.create_date }}</small></a>
+                    <hr>
+                    <hr>
+                    <!-- <a class="card-title pricing-card-title">{{ post|safe|linebreaksbr }}<small
+                            class="text-muted">&nbsp;&nbsp;{{ post.create_date }}</small></a> -->
+                    <hr>
+                </div>
+            </aside>
+
+        </div>
+    </main>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script type="text/javascript">
+
+        $("#user_name").text()
+        $(".writer_name").text()
+
+        if ($("#user_name").text() == $(".writer_name").text()) {
+            $("#control_id").removeClass("hidden")
+        }
+
+        $('.like').click(function () {
+            var pk = $(this).attr('name')
+
+            $.ajax({
+                type: "POST",
+                url: "{% url 'like' %}",
+                data: { 'pk': pk, 'csrfmiddlewaretoken': '{{ csrf_token }}' },
+                dataType: "json",
+
+                success: function (response) {
+                    if (response.likes_count == 1) {
+                        $('#count' + pk).html(response.likes_count + ' like ');
+                        $('#like-img' + pk).attr('src', '/static/like_after.png');
+                    } else if (response.likes_count == 0) {
+                        $('#count' + pk).html('0 like');
+                        $('#like-img' + pk).attr('src', '/static/like_before.png');
+                    } else {
+                        $('#count' + pk).html(response.likes_count + ' like');
+                        $('#like-img' + pk).attr('src', '/static/like_after.png');
+                    }
+                    alert(response.message);
+                },
+                error: function (request, status, error) {
+                    alert('로그인이 필요합니다.')
+                }
+            });
+        })
+
+        $(".comment_writer_name")
+        $(".comment_writer_name")[0].innerHTML
+
+        for (i = 0; i < $(".comment_writer_name").length; i++) {
+            if ($("#user_name").text() == $(".comment_writer_name")[i].innerHTML) {
+                $("#control_id1" + i).removeClass("hidden");
+            }
+        }
+
+        $(".comment_writer_name")
+        $(".comment_writer_name")[0].innerHTML
+
+        for (i = 0; i < $(".comment_writer_name").length; i++) {
+            if ($("#user_name").text() == $(".comment_writer_name")[i].innerHTML) {
+                $("#control_id1" + i).removeClass("hidden");
+            }
+        }
+    </script>
+
+</body>
+{% endblock %}
